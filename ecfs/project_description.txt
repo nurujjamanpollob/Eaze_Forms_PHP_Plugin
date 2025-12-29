@@ -1,0 +1,15 @@
+[Short Description]
+A secure, self-contained PHP & SQLite contact form management system with a modern glassmorphism dashboard and flexible EAV data architecture. Developed by Eaze Web IT.
+
+[Full Description]
+Eaze Contact Form System (ECFS) is a professional-grade backend solution for handling website inquiries. Unlike traditional form scripts, ECFS uses an Entity-Attribute-Value (EAV) data model, allowing it to accept any set of form fields without database reconfiguration. 
+
+Key Features:
+- Zero-Configuration: Automatic SQLite database setup.
+- Modern UI: Responsive admin dashboard with Glassmorphism aesthetics and Tailwind CSS.
+- Secure Uploads: Advanced file handling for images, videos, and documents.
+- Embeddable Widget: A single JavaScript file to bridge any HTML form to the backend.
+- Robust Security: Built-in CSRF protection, rate limiting, audit logs, and secure session management.
+- Privacy Focused: Self-hosted data with no third-party dependencies.
+
+Developed by Eaze Web IT (https://eazewebit.com)

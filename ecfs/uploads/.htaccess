@@ -1,0 +1,1 @@
+# Deny direct access to all files in this directory\nOrder Deny,Allow\nDeny from all\n
