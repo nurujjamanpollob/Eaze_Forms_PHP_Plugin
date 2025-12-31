@@ -5,7 +5,7 @@ use EazeWebIT\Auth;
 use EazeWebIT\Statuses;
 use EazeWebIT\Security;
 
-if (!Auth::check()) {
+if (!Auth::check() || !Auth::isAdmin()) {
     header('Location: login.php');
     exit;
 }

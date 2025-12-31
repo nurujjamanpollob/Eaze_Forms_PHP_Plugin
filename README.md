@@ -1,80 +1,74 @@
 # Eaze Contact Form System (ECFS)
 
-A professional, self-contained PHP/SQLite backend for managing contact form submissions. Developed by **Eaze Web IT** (https://eazewebit.com).
+**A professional, self-contained PHP/SQLite backend for managing contact form submissions.**
 
-Features an embeddable JavaScript widget, an EAV-based data model, and a modern glassmorphism admin dashboard.
+Developed by **[Eaze Web IT](https://eazewebit.com)**, ECFS is designed to be a "drop-in" solution for developers who need a secure, reliable backend for contact forms without the complexity of setting up heavy frameworks or database servers.
 
-## 🚀 Features
-- **Zero-Config Setup**: Automatic database initialization on first run.
-- **EAV Data Model**: Flexible form fields without schema changes.
-- **Secure File Uploads**: Support for multiple files, images, and videos.
-- **Admin Dashboard**: Responsive, dark-themed UI built with Tailwind CSS.
-- **Security**: CSRF protection, rate limiting, and audit logging.
-- **Embeddable Widget**: Single JS file to connect any HTML form to the backend.
+## 📚 Documentation Index
 
-## 🛠️ Installation & Setup
+Detailed guides are located in the `docs/` directory. Refer to these files for specific configurations:
 
-1. **System Requirements**:
-   - PHP 8.2 or higher.
-   - SQLite3 extension enabled in PHP.
-   - A web server (Apache, Nginx, or PHP's built-in server).
+| Document | Description |
+| :--- | :--- |
+| **[Feature List](docs/FEATURE_LIST.md)** | A comprehensive breakdown of all system capabilities, including the EAV data model and security features. |
+| **[Installation Guide](docs/INSTALLATION_GUIDE.md)** | Step-by-step instructions for server requirements, file permissions, and the setup wizard. |
+| **[Technical Overview](docs/TECHNICAL_OVERVIEW.md)** | Deep dive into the architecture, security layers, and code structure. |
+| **[Customization Guide](docs/CUSTOMIZATION_GUIDE.md)** | Instructions for developers to extend logic, add webhooks, style the dashboard, and handle JS events. |
 
-2. **Deployment**:
-   - Place the `ecfs` folder in your project directory.
-   - **IMPORTANT**: Set your web server's document root to the `ecfs/public` folder. This ensures that sensitive files in `src/`, `db/`, and `uploads/` are not directly accessible via the browser.
-   - Ensure the `db/` and `uploads/` directories are writable by the web server.
+## 🚀 Key Features
 
-3. **Initialization**:
-   - Navigate to `http://your-domain.com/setup.php` (if docroot is set to `public`).
-   - Follow the wizard to create your admin account.
-   - **SECURITY**: After setup is complete, the system creates an `install.lock` file in the `db/` folder to prevent re-initialization.
+*   **Zero-Config Database:** Powered by **SQLite**, requiring no MySQL/PostgreSQL server setup.
+*   **Dynamic Data Model (EAV):** Add unlimited fields to your HTML forms without ever running database migrations. The system automatically detects and stores new inputs.
+*   **Enterprise-Grade Security:**
+    *   Built-in **CSRF Protection**.
+    *   **Rate Limiting** to block spam and brute-force attacks.
+    *   **Content Security Policy (CSP)** headers.
+    *   Secure file upload handling (stored outside public root).
+*   **Powerful Admin Dashboard:**
+    *   Real-time submission overview.
+    *   Status management (Pending, Resolved, etc.).
+    *   Audit logs for admin actions.
+    *   Role-Based Access Control (RBAC).
+*   **Email Notifications:** SMTP integration for admin alerts and user confirmation auto-replies.
 
-4. **Running with PHP built-in server**:
-   ```bash
-   cd ecfs/public
-   php -S localhost:8000
-   ```
-   Then visit `http://localhost:8000/setup.php`.
+## 🛠️ Tech Stack
 
-## 📦 How to Embed the Form
+*   **Backend:** PHP 8.0+
+*   **Database:** SQLite 3 (File-based)
+*   **Frontend:** Vanilla JavaScript (AJAX)
+*   **Dashboard Styling:** Tailwind CSS
 
-Add the following to any HTML page:
+## ⚡ Quick Start Guide
 
-1. **Include the script**:
-   ```html
-   <script src="/eaze_contact_form.js"></script>
-   ```
+### 1. Prerequisites
+Ensure your server has **PHP 8.0+** installed with the following extensions: `pdo_sqlite`, `openssl`, `fileinfo`.
 
-2. **Create your form**:
-   ```html
-   <form eaze-contact-form=\"true\" eaze-contact-form-id=\"contact_v1\" method=\"POST\">
-       <input type=\"text\" name=\"full_name\" placeholder=\"Name\" required>
-       <input type=\"email\" name=\"email\" placeholder=\"Email\" required>
-       <textarea name=\"message\" placeholder=\"Your message\"></textarea>
-       <input type=\"file\" name=\"attachments[]\" multiple>
-       <button type=\"submit\">Send</button>
-   </form>
-   ```
+### 2. Installation
+1.  Upload the `ecfs` directory to your web server.
+2.  Set write permissions for the database and upload folders:
+    ```bash
+    chmod -R 775 ecfs/db
+    chmod -R 775 ecfs/uploads
+    ```
+3.  Navigate to the setup wizard in your browser:
+    `http://yourdomain.com/ecfs/public/setup.php`
+4.  Create your admin account and initialize the system.
 
-## 🧪 Testing
-Run the automated test script via CLI:
-```bash
-php tests/test_submission.php
-```
+### 3. Frontend Integration
+Include the plugin script and add the required attributes to your HTML form.
 
-## 📂 Project Structure
-- `assets/`: Static assets (logos, icons).
-- `db/`: SQLite database, schema, and installation lock.
-- `public/`: Web-accessible entry points and API. **(Set as Document Root)**
-- `src/`: Core PHP logic and classes.
-- `uploads/`: Secure storage for submitted files.
-- `tests/`: Functional test scripts.
+```html
+<!-- 1. Include the script -->
+<script src="/ecfs/public/eaze_contact_form.js"></script>
 
-## 🔒 Security Best Practices
-- **Document Root**: Always point your web server to the `public/` directory.
-- **File Permissions**: Keep `db/` and `uploads/` writable but restricted.
-- **Nginx Users**: Explicitly deny access to `uploads`, `db`, and `src` folders in your site configuration.
-- **SSL/TLS**: Always serve the application over HTTPS.
-
----
-© 2026 **Eaze Web IT** (https://eazewebit.com). All rights reserved.
+<!-- 2. Create the form -->
+<form eaze-contact-form="true" enctype="multipart/form-data">
+    <!-- CSRF Token (Required) -->
+    <input type="hidden" name="csrf_token" value="<?php echo Security::generateCsrfToken(); ?>">
+    
+    <input type="text" name="name" placeholder="Your Name" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+    <textarea name="message" placeholder="How can we help?"></textarea>
+    
+    <button type="submit">Send Message</button>
+</form>

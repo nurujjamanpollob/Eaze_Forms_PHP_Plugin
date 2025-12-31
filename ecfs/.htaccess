@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Block access to the db folder
+RewriteRule ^db/ - [F,L]
+
+# Block access to the src folder
+RewriteRule ^src/ - [F,L]
+
+# SEC-03: Block access to log files
+<FilesMatch "\.(log|sqlite|sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

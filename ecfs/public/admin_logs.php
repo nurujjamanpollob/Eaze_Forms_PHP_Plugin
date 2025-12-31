@@ -60,6 +60,7 @@ if ($type === 'security') {
                     <tr>
                         <th class="p-4">Time</th>
                         <th class="p-4">Type</th>
+                        <th class="p-4">IP Address</th>
                         <th class="p-4">Details</th>
                         <th class="p-4">Extra Data</th>
                     </tr>
@@ -83,6 +84,7 @@ if ($type === 'security') {
                                 <?= htmlspecialchars($log['type']) ?>
                             </span>
                         </td>
+                        <td class="p-4 text-sky-400 font-mono"><?= htmlspecialchars($log['ip_address'] ?? 'N/A') ?></td>
                         <td class="p-4 text-white"><?= htmlspecialchars($log['incident_details']) ?></td>
                         <td class="p-4 text-xs font-mono text-gray-500"><?= htmlspecialchars($log['extra_data']) ?></td>
                         
@@ -95,7 +97,7 @@ if ($type === 'security') {
                     <?php endforeach; ?>
                     <?php if (empty($logs)): ?>
                     <tr>
-                        <td colspan="4" class="p-8 text-center text-gray-500 italic">No log entries found.</td>
+                        <td colspan="5" class="p-8 text-center text-gray-500 italic">No log entries found.</td>
                     </tr>
                     <?php endif; ?>
                 </tbody>

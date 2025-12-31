@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS logs (
 
 CREATE TABLE IF NOT EXISTS statuses (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                        status TEXT NOT NULL UNIQUE,
+                                        status TEXT NOT NULL UNIQUE COLLATE NOCASE,
                                         description TEXT,
                                         color TEXT DEFAULT 'sky'
 );
@@ -60,10 +60,12 @@ CREATE TABLE IF NOT EXISTS security_log (
                                             incident_details TEXT NOT NULL,
                                             type TEXT NOT NULL,
                                             extra_data TEXT,
+                                            ip_address TEXT,
                                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_security_created_at ON security_log (created_at);
+CREATE INDEX IF NOT EXISTS idx_security_ip ON security_log (ip_address);
 
 -- Initial Data
 INSERT OR IGNORE INTO roles (role_name, role_description, level) VALUES ('admin', 'System Administrator', 100);
@@ -75,4 +77,16 @@ INSERT OR IGNORE INTO statuses (status, description, color) VALUES ('error', 'An
 
 INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('upload_limit', '10');
 INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('footer_text', '© 2026 Eaze Web IT (https://eazewebit.com). All rights reserved.');
-INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('admin_logo_url', 'assets/logo.png');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('admin_logo_url', '/ecfs/public/assets/logo.png');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('default_status', 'pending');
+
+-- SMTP and Notification Settings
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_host', '');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_port', '587');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_user', '');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_pass', '');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_from_name', 'EazeWebIT Notifications');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_from_email', 'noreply@example.com');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('admin_recipient_email', '');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('enable_confirmation_email', '0');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('enable_admin_notification', '0');

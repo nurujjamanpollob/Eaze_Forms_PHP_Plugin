@@ -1,10 +1,11 @@
 <?php
 namespace EazeWebIT;
+use EazeWebIT\Security;
 
 class Auth {
-    public static function login($username, $password) {
+    public static function login(string $username, string $password): array {
         $db = Database::getInstance();
-        $ip = $_SERVER['REMOTE_ADDR'];
+        $ip = Security::getClientIp() ?? 'unknown';
 
         if (!Security::checkRateLimit($ip)) {
             Security::logSecurityIncident('rate_limit_exceeded', 'Too many login attempts', ['ip' => $ip]);
@@ -21,6 +22,9 @@ class Auth {
 
         if ($user && password_verify($password, $user['password'])) {
             Security::initSession();
+            // Regenerate session ID to prevent session fixation
+            session_regenerate_id(true);
+            
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
@@ -31,16 +35,15 @@ class Auth {
 
         Security::logSecurityIncident('login_attempt', "Failed login for $username", ['ip' => $ip]);
         
-        // Lock account after 20 attempts logic would go here
         return ['success' => false, 'message' => 'Invalid credentials.'];
     }
 
-    public static function check() {
+    public static function check(): bool {
         Security::initSession();
         return isset($_SESSION['user_id']);
     }
 
-    public static function user() {
+    public static function user(): ?array {
         Security::initSession();
         if (!self::check()) return null;
         return [
@@ -50,13 +53,43 @@ class Auth {
         ];
     }
 
-    public static function logout() {
+    public static function logout(): void {
         Security::initSession();
         session_destroy();
     }
     
-    public static function isAdmin() {
+    public static function isAdmin(): bool {
         Security::initSession();
         return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+    }
+
+    public static function changePassword(int $userId, string $currentPassword, string $newPassword): array {
+        $db = Database::getInstance();
+        
+        $stmt = $db->prepare("SELECT password FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            return ['success' => false, 'message' => 'User not found.'];
+        }
+
+        if (!password_verify($currentPassword, $user['password'])) {
+            return ['success' => false, 'message' => 'Incorrect current password.'];
+        }
+
+        if (strlen($newPassword) < 8) {
+            return ['success' => false, 'message' => 'New password must be at least 8 characters long.'];
+        }
+
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        $updateStmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $updateStmt->execute([$hashedPassword, $userId]);
+
+        // Log the action
+        $logStmt = $db->prepare("INSERT INTO logs (action, performed_by, details) VALUES (?, ?, ?)");
+        $logStmt->execute(['password_change', $userId, 'User changed their password']);
+
+        return ['success' => true, 'message' => 'Password updated successfully.'];
     }
 }

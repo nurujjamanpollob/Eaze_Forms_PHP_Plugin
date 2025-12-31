@@ -5,7 +5,7 @@ use EazeWebIT\Auth;
 use EazeWebIT\Statuses;
 use EazeWebIT\Security;
 
-if (!Auth::check()) {
+if (!Auth::check() || !Auth::isAdmin()) {
     header('Location: login.php');
     exit;
 }
@@ -30,13 +30,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 
 $submission = Submissions::getById($id);
 if (!$submission) {
-    die("Submission not found");
+
+    header('Location: manage_submissions.php?error=Submission+not+found');
+    exit;
 }
 
 $availableStatuses = Statuses::all();
 $colorMap = Statuses::getColorMap();
 $submittedBy = $submission['submitted_by'] ?? 'Guest';
 $csrfToken = Security::generateCsrfToken();
+
+function isSafeUrl($url) {
+    $scheme = parse_url($url, PHP_URL_SCHEME);
+    return in_array(strtolower($scheme), ['http', 'https']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -116,31 +123,51 @@ $csrfToken = Security::generateCsrfToken();
                         <h3 class="text-xs font-bold text-sky-500 uppercase tracking-wider mb-2"><?= htmlspecialchars($key) ?></h3>
                         
                         <?php if ($type === 'file'): 
-                            $files = json_decode($val, true);
-                            if (!is_array($files)) $files = [$val];
-                            foreach ($files as $f):
-                                $filename = basename($f);
-                                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-                                $fileUrl = "download.php?file=" . urlencode($filename);
+                            $decoded = json_decode($val, true);
+                            $fileItems = [];
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                if (isset($decoded['path'])) {
+                                    $fileItems[] = $decoded;
+                                } else {
+                                    foreach ($decoded as $item) {
+                                        if (is_array($item) && isset($item['path'])) {
+                                            $fileItems[] = $item;
+                                        } elseif (is_string($item)) {
+                                            $fileItems[] = ['path' => $item, 'original_name' => basename($item)];
+                                        }
+                                    }
+                                }
+                            } else {
+                                $fileItems[] = ['path' => $val, 'original_name' => basename($val)];
+                            }
+
+                            foreach ($fileItems as $f):
+                                $filePath = $f['path'];
+                                $originalName = $f['original_name'] ?? basename($filePath);
+                                $storedName = basename($filePath);
+                                $ext = strtolower(pathinfo($storedName, PATHINFO_EXTENSION));
+                                $fileUrl = "download.php?file=" . urlencode($storedName);
                                 $viewUrl = $fileUrl . "&inline=1";
                         ?>
                             <div class="mt-2">
                                 <?php if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])): ?>
                                     <img src="<?= $viewUrl ?>" class="max-w-xs rounded-lg border border-white/20 shadow-lg" loading="lazy">
-                                    <div class="mt-2">
-                                        <a href="<?= $fileUrl ?>" class="text-xs text-sky-400 hover:underline">Download Original</a>
+                                    <div class="mt-2 flex items-center space-x-2">
+                                        <span class="text-xs text-gray-400 truncate max-w-[200px]"><?= htmlspecialchars($originalName) ?></span>
+                                        <a href="<?= $fileUrl ?>" class="text-xs text-sky-400 hover:underline">Download</a>
                                     </div>
                                 <?php elseif (in_array($ext, ['mp4', 'webm'])): ?>
                                     <video controls class="max-w-md rounded-lg border border-white/20">
                                         <source src="<?= $viewUrl ?>">
-                                    </video>
-                                    <div class="mt-2">
-                                        <a href="<?= $fileUrl ?>" class="text-xs text-sky-400 hover:underline">Download Video</a>
+                                    </video>&nbsp;
+                                    <div class="mt-2 flex items-center space-x-2">
+                                        <span class="text-xs text-gray-400 truncate max-w-[200px]"><?= htmlspecialchars($originalName) ?></span>
+                                        <a href="<?= $fileUrl ?>" class="text-xs text-sky-400 hover:underline">Download</a>
                                     </div>
                                 <?php else: ?>
                                     <div class="flex items-center space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
                                         <span class="text-2xl">📄</span>
-                                        <span class="flex-1 truncate"><?= htmlspecialchars($filename) ?></span>
+                                        <span class="flex-1 truncate" title="<?= htmlspecialchars($originalName) ?>"><?= htmlspecialchars($originalName) ?></span>
                                         <a href="<?= $fileUrl ?>" class="text-sky-400 hover:text-sky-300 font-bold">Download</a>
                                     </div>
                                 <?php endif; ?>
@@ -161,12 +188,18 @@ $csrfToken = Security::generateCsrfToken();
                             </div>
 
                         <?php elseif (filter_var($val, FILTER_VALIDATE_URL)): ?>
-                            <a href="<?= htmlspecialchars($val) ?>" target="_blank" rel="noopener noreferrer" class="block p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition">
-                                <div class="flex items-center justify-between">
-                                    <span class="truncate text-sky-300"><?= htmlspecialchars($val) ?></span>
-                                    <span class="text-xs">↗</span>
+                            <?php if (isSafeUrl($val)): ?>
+                                <a href="<?= htmlspecialchars($val) ?>" target="_blank" rel="noopener noreferrer" class="block p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition">
+                                    <div class="flex items-center justify-between">
+                                        <span class="truncate text-sky-300"><?= htmlspecialchars($val) ?></span>
+                                        <span class="text-xs">↗</span>
+                                    </div>
+                                </a>
+                            <?php else: ?>
+                                <div class="block p-4 bg-white/5 rounded-xl border border-white/10 italic text-gray-500">
+                                    Blocked potentially unsafe link: <?= htmlspecialchars($val) ?>
                                 </div>
-                            </a>
+                            <?php endif; ?>
 
                         <?php else: ?>
                             <div class="relative group">

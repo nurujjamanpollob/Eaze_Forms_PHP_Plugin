@@ -45,7 +45,12 @@ switch ($route) {
         break;
     default:
         // Check if it's a file in public
-        if (file_exists(__DIR__ . $route) && is_file(__DIR__ . $route)) {
+        $requestedPath = __DIR__ . $route;
+        $realPath = realpath($requestedPath);
+        $publicDir = realpath(__DIR__);
+
+        // Ensure the file exists and is within the public directory to prevent path traversal
+        if ($realPath && strpos($realPath, $publicDir) === 0 && is_file($realPath)) {
             return false; // Let server handle static file
         }
         http_response_code(404);

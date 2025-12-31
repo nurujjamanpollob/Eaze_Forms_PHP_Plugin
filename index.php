@@ -244,7 +244,7 @@ $nonce = Security::getNonce();
                 </div>
                 <div class="form-group">
                     <label for="attachment">Attachment (Optional)</label>
-                    <input type="file" name="attachment" id="attachment">
+                    <input type="file" name="attachment" multiple id="attachment">
                 </div>
                 <button type="submit">Send Message</button>
             </form>

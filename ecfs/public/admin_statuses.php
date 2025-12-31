@@ -25,18 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
         
         if ($action === 'add') {
-            $status = $_POST['status'] ?? '';
+            $status = trim($_POST['status'] ?? '');
             $desc = $_POST['description'] ?? '';
             $color = $_POST['color'] ?? 'sky';
             
             if ($status) {
-                $stmt = $db->prepare("INSERT INTO statuses (status, description, color) VALUES (?, ?, ?)");
-                try {
-                    $stmt->execute([strtolower($status), $desc, $color]);
-                    $message = "Status label added.";
-                } catch (\Exception $e) {
-                    $error = "Error: " . $e->getMessage();
+                // Check if status already exists before attempting insertion
+                if (Statuses::exists($status)) {
+                    $error = "The status label '" . htmlspecialchars($status) . "' already exists.";
+                } else {
+                    $stmt = $db->prepare("INSERT INTO statuses (status, description, color) VALUES (?, ?, ?)");
+                    try {
+                        $stmt->execute([strtolower($status), $desc, $color]);
+                        $message = "Status label added.";
+                    } catch (\Exception $e) {
+                        $error = "Error: " . $e->getMessage();
+                    }
                 }
+            } else {
+                $error = "Status name is required.";
             }
         } elseif ($action === 'delete') {
             $id = $_POST['id'] ?? null;
@@ -126,13 +133,14 @@ $colors = ['sky', 'yellow', 'green', 'red', 'blue', 'purple', 'gray', 'orange', 
                                     </span>
                                 </td>
                                 <td class="p-4 text-sm text-gray-400">
-                                    <?= htmlspecialchars($s['description']) ?>
+                                    <?= htmlspecialchars(str_replace('\\n', "\n", $s['description'])) ?>
                                 </td>
                                 <td class="p-4 text-right">
                                     <form method="POST" class="delete-status-form inline">
                                         <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                         <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                        <!-- SEC-04: Escape status ID -->
+                                        <input type="hidden" name="id" value="<?= htmlspecialchars($s['id']) ?>">
                                         <button type="submit" class="text-red-400 hover:underline text-sm">Delete</button>
                                     </form>
                                 </td>

@@ -56,7 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$users = $db->query("SELECT * FROM users")->fetchAll();
+
+$users = $db->query("SELECT id, username, email, role, locked, created_at FROM users")->fetchAll();
 $roles = $db->query("SELECT role_name FROM roles")->fetchAll(PDO::FETCH_COLUMN);
 $csrfToken = Security::generateCsrfToken();
 ?>

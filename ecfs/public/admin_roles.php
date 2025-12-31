@@ -117,7 +117,10 @@ $roles = $db->query("SELECT * FROM roles ORDER BY level DESC")->fetchAll();
                             <tr class="hover:bg-white/5 transition">
                                 <td class="p-4">
                                     <div class="font-bold text-white"><?= htmlspecialchars($role['role_name']) ?></div>
-                                    <div class="text-xs text-gray-500"><?= htmlspecialchars($role['role_description']) ?></div>
+                                    <div class="text-xs text-gray-500"><?php 
+                                        // Fix for literal \n strings showing up
+                                        echo htmlspecialchars(str_replace('\\n', "\n", $role['role_description'])); 
+                                    ?></div>
                                 </td>
                                 <td class="p-4 text-center">
                                     <span class="bg-white/10 px-2 py-1 rounded font-mono text-xs text-sky-400"><?= $role['level'] ?></span>
@@ -129,4 +132,32 @@ $roles = $db->query("SELECT * FROM roles ORDER BY level DESC")->fetchAll();
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="role_name" value="<?= htmlspecialchars($role['role_name']) ?>">
                                         <button type="submit" class="text-red-400 hover:underline text-sm">Delete</button>
-                                    </form>\n                                    <?php else: ?>\n                                        <span class=\"text-xs text-gray-500 italic\">System Role</span>\n                                    <?php endif; ?>\n                                </td>\n                            </tr>\n                            <?php endforeach; ?>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </main>\n\n    <?php include 'includes/copyright.php'; ?>\n\n    <script nonce=\"<?= $nonce ?>\">\n        document.addEventListener('DOMContentLoaded', function() {\n            document.querySelectorAll('.delete-role-form').forEach(form => {\n                form.addEventListener('submit', function(e) {\n                    if (!confirm('Are you sure you want to delete this role?')) {\n                        e.preventDefault();\n                    }\n                });\n            });\n        });\n    </script>\n</body>\n</html>\n"
+                                    </form>
+                                    <?php else: ?>
+                                        <span class="text-xs text-gray-500 italic">System Role</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <?php include 'includes/copyright.php'; ?>
+
+    <script nonce="<?= $nonce ?>">
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.delete-role-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm('Are you sure you want to delete this role?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

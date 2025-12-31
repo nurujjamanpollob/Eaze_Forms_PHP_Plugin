@@ -2,17 +2,17 @@
 namespace EazeWebIT;
 
 class Statuses {
-    public static function all() {
+    public static function all(): array {
         $db = Database::getInstance();
         return $db->query("SELECT * FROM statuses ORDER BY status ASC")->fetchAll();
     }
 
-    public static function getNames() {
+    public static function getNames(): array {
         $statuses = self::all();
         return array_column($statuses, 'status');
     }
 
-    public static function getColorMap() {
+    public static function getColorMap(): array {
         $statuses = self::all();
         $map = [];
         foreach ($statuses as $s) {
@@ -21,18 +21,28 @@ class Statuses {
         return $map;
     }
 
-    public static function exists($status) {
+    public static function exists(string $status): bool {
         $db = Database::getInstance();
-        $stmt = $db->prepare("SELECT id FROM statuses WHERE status = ?");
+        // Use COLLATE NOCASE for case-insensitive check if the DB doesn't have it, 
+        // but adding it to schema is better. Still, let's be safe here.
+        $stmt = $db->prepare("SELECT id FROM statuses WHERE status = ? COLLATE NOCASE");
         $stmt->execute([$status]);
         return (bool)$stmt->fetch();
     }
 
-    public static function getTailwindClasses($status, $colorMap = null) {
+    public static function getTailwindClasses(string $status, ?array $colorMap = null): string {
         if (!$colorMap) {
             $colorMap = self::getColorMap();
         }
-        $color = $colorMap[$status] ?? 'sky';
+        // Ensure case-insensitive lookup in the map
+        $status = strtolower($status);
+        $color = 'sky';
+        foreach ($colorMap as $s => $c) {
+            if (strtolower($s) === $status) {
+                $color = $c;
+                break;
+            }
+        }
         
         $colors = [
             'yellow' => 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
