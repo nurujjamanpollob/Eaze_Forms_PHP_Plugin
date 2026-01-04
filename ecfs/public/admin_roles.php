@@ -56,8 +56,10 @@ $roles = $db->query("SELECT * FROM roles ORDER BY level DESC")->fetchAll();
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Role Management - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background: #0f172a; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -102,7 +104,7 @@ $roles = $db->query("SELECT * FROM roles ORDER BY level DESC")->fetchAll();
                 </form>
             </div>
 
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-2 mb-5-rem-mobile">
                 <div class="glass rounded-2xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead class="bg-white/5 border-b border-white/10">
@@ -119,7 +121,7 @@ $roles = $db->query("SELECT * FROM roles ORDER BY level DESC")->fetchAll();
                                     <div class="font-bold text-white"><?= htmlspecialchars($role['role_name']) ?></div>
                                     <div class="text-xs text-gray-500"><?php 
                                         // Fix for literal \n strings showing up
-                                        echo htmlspecialchars(str_replace('\\n', "\n", $role['role_description'])); 
+                                        echo htmlspecialchars(str_replace('\\\\n', "\n", $role['role_description'])); 
                                     ?></div>
                                 </td>
                                 <td class="p-4 text-center">

@@ -4,6 +4,7 @@ use EazeWebIT\Submissions;
 use EazeWebIT\Auth;
 use EazeWebIT\Statuses;
 use EazeWebIT\Security;
+use EazeWebIT\Settings;
 
 if (!Auth::check() || !Auth::isAdmin()) {
     header('Location: login.php');
@@ -37,12 +38,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Pagination setup
+$limit = (int)Settings::get('manage_submissions_pagination_limit', 10);
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($page - 1) * $limit;
+
 $filters = [
     'status' => $_GET['status'] ?? 'All Statuses',
-    'search' => $_GET['search'] ?? ''
+    'search' => $_GET['search'] ?? '',
+    'limit' => $limit,
+    'offset' => $offset
 ];
 
 $submissions = Submissions::getAll($filters);
+$totalSubmissions = Submissions::countAll($filters);
+$totalPages = ceil($totalSubmissions / $limit);
+
 $availableStatuses = Statuses::all();
 $colorMap = Statuses::getColorMap();
 $csrfToken = Security::generateCsrfToken();
@@ -54,6 +65,7 @@ $csrfToken = Security::generateCsrfToken();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Submissions - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background-color: #0f172a; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -64,7 +76,7 @@ $csrfToken = Security::generateCsrfToken();
     
     <?php include 'includes/sidebar.php'; ?>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+    <main class="flex-1 p-8 overflow-y-auto main-content">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
                 <h2 class="text-3xl font-bold">Manage Submissions</h2>
@@ -89,7 +101,7 @@ $csrfToken = Security::generateCsrfToken();
         </div>
         <?php endif; ?>
 
-        <div class="glass rounded-2xl overflow-hidden">
+        <div class="glass rounded-2xl overflow-hidden mb-8">
             <div class="p-6 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
                 <form id="filter-form" method="GET" class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto">
                     <input type="text" name="search" value="<?= htmlspecialchars($filters['search']) ?>" placeholder="Search..." class="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 flex-1">
@@ -103,7 +115,7 @@ $csrfToken = Security::generateCsrfToken();
                     </select>
                 </form>
 
-                <div class="flex flex-wrap gap-2 justify-center md:justify-end">
+                <div class="flex flex-wrap gap-2 justify-center md:justify-end bulk-actions-container">
                     <?php foreach ($availableStatuses as $st): ?>
                         <button type="button" data-action="status_<?= htmlspecialchars($st['status']) ?>" 
                                 class="bulk-action-btn px-3 py-1 rounded text-[10px] font-bold uppercase transition border <?= Statuses::getTailwindClasses($st['status'], $colorMap) ?> hover:opacity-80">
@@ -117,7 +129,7 @@ $csrfToken = Security::generateCsrfToken();
             <form id="bulk-form" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <input type="hidden" name="action" id="bulk-action">
-                <table class="w-full text-left">
+                <table class="w-full text-left responsive-table">
                     <thead>
                         <tr class="bg-white/5 text-[10px] uppercase tracking-widest text-gray-500">
                             <th class="p-4 w-10">
@@ -136,14 +148,14 @@ $csrfToken = Security::generateCsrfToken();
                             $submittedBy = $sub['submitted_by'] ?? 'Guest';
                         ?>
                         <tr class="hover:bg-white/5 transition-colors">
-                            <td class="p-4">
+                            <td class="p-4" data-label="Select">
                                 <input type="checkbox" name="ids[]" value="<?= htmlspecialchars($sub['submission_id']) ?>" class="sub-checkbox rounded bg-white/10 border-white/20">
                             </td>
-                            <td class="p-4">
+                            <td class="p-4" data-label="ID">
                                 <div class="font-mono text-sky-400">#<?= htmlspecialchars($sub['submission_id']) ?></div>
                             </td>
-                            <td class="p-4">
-                                <div class="flex items-center space-x-2">
+                            <td class="p-4" data-label="Submitted By">
+                                <div class="flex items-center space-x-2 md:justify-start justify-end">
                                     <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">
                                         <?= strtoupper(substr($submittedBy, 0, 1)) ?>
                                     </div>
@@ -152,15 +164,15 @@ $csrfToken = Security::generateCsrfToken();
                                     </span>
                                 </div>
                             </td>
-                            <td class="p-4 text-sm text-gray-400">
+                            <td class="p-4 text-sm text-gray-400" data-label="Date">
                                 <?= htmlspecialchars($sub['created_at']) ?>
                             </td>
-                            <td class="p-4">
+                            <td class="p-4" data-label="Status">
                                 <span class="px-2 py-1 text-[10px] font-bold rounded uppercase border <?= Statuses::getTailwindClasses($currentStatus, $colorMap) ?>">
                                     <?= htmlspecialchars($currentStatus) ?>
                                 </span>
                             </td>
-                            <td class="p-4 text-right">
+                            <td class="p-4 text-right" data-label="Actions">
                                 <a href="submission_preview.php?id=<?= htmlspecialchars($sub['submission_id']) ?>" class="text-sky-400 hover:text-sky-300 text-sm font-bold">View</a>
                             </td>
                         </tr>
@@ -174,6 +186,28 @@ $csrfToken = Security::generateCsrfToken();
                 </table>
             </form>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($totalPages > 1): ?>
+        <div class="flex justify-center items-center space-x-2 mb-5-rem-mobile">
+            <?php if ($page > 1): ?>
+                <a href="?page=<?= $page - 1 ?>&status=<?= urlencode($filters['status']) ?>&search=<?= urlencode($filters['search']) ?>" class="px-4 py-2 glass rounded-lg hover:bg-white/10 transition">Previous</a>
+            <?php endif; ?>
+            
+            <div class="flex space-x-1">
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="?page=<?= $i ?>&status=<?= urlencode($filters['status']) ?>&search=<?= urlencode($filters['search']) ?>" 
+                       class="w-10 h-10 flex items-center justify-center rounded-lg transition <?= $i === $page ? 'bg-sky-600 text-white' : 'glass hover:bg-white/10' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
+
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?= $page + 1 ?>&status=<?= urlencode($filters['status']) ?>&search=<?= urlencode($filters['search']) ?>" class="px-4 py-2 glass rounded-lg hover:bg-white/10 transition">Next</a>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
     </main>
 
     <?php include 'includes/copyright.php'; ?>

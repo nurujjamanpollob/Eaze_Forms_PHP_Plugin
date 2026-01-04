@@ -90,3 +90,9 @@ INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('smtp_from_email', 'nore
 INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('admin_recipient_email', '');
 INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('enable_confirmation_email', '0');
 INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('enable_admin_notification', '0');
+
+-- Pagination and Email Templates
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('dashboard_pagination_limit', '6');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('manage_submissions_pagination_limit', '10');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('user_email_template', '<h2>Thank you for your submission!</h2><p>We have received your form submission (Reference ID: #{{submission_id}}).</p><p>This is an automated confirmation. We will review your submission shortly.</p><br><hr><p><small>{{footer_text}}</small></p>');
+INSERT OR IGNORE INTO settings ("Key", "Value") VALUES ('admin_email_template', '<h2>New Submission Received</h2><p><strong>ID:</strong> {{submission_id}}</p><p><strong>Submitted By:</strong> {{submitted_by}}</p><h3>Form Data:</h3>{{form_data}}');

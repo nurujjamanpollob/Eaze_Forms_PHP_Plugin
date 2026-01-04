@@ -90,7 +90,11 @@ class Submissions {
 
         $whereSql = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
         
-        $query = "SELECT submission_id, MAX(created_at) as created_at FROM submissions $whereSql GROUP BY submission_id ORDER BY created_at DESC";
+        $limit = isset($filters['limit']) ? (int)$filters['limit'] : null;
+        $offset = isset($filters['offset']) ? (int)$filters['offset'] : 0;
+        $limitSql = $limit ? "LIMIT $limit OFFSET $offset" : "";
+
+        $query = "SELECT submission_id, MAX(created_at) as created_at FROM submissions $whereSql GROUP BY submission_id ORDER BY created_at DESC $limitSql";
         $stmt = $db->prepare($query);
         $stmt->execute($params);
         $groups = $stmt->fetchAll();
@@ -119,6 +123,31 @@ class Submissions {
             $results[] = $submission;
         }
         return $results;
+    }
+
+    public static function countAll(array $filters = []): int {
+        $db = Database::getInstance();
+        
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['status']) && $filters['status'] !== 'All Statuses') {
+            $where[] = "submission_id IN (SELECT submission_id FROM submissions WHERE field_key = 'status' AND field_value = ?)";
+            $params[] = strtolower($filters['status']);
+        }
+
+        if (!empty($filters['search'])) {
+            $searchTerm = "%" . $filters['search'] . "%";
+            $where[] = "submission_id IN (SELECT submission_id FROM submissions WHERE field_value LIKE ?)";
+            $params[] = $searchTerm;
+        }
+
+        $whereSql = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+        
+        $query = "SELECT COUNT(DISTINCT submission_id) FROM submissions $whereSql";
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
     }
 
     public static function getById(string $id): ?array {

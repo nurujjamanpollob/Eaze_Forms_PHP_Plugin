@@ -49,8 +49,10 @@ function isSafeUrl($url) {
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview Submission - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background: #0f172a; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -60,7 +62,7 @@ function isSafeUrl($url) {
     
     <?php include 'includes/sidebar.php'; ?>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+    <main class="flex-1 p-8 overflow-y-auto main-content">
         <div class="max-w-4xl">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
@@ -69,10 +71,10 @@ function isSafeUrl($url) {
                     <p class="text-gray-500">Received on <?= htmlspecialchars($submission['created_at']) ?></p>
                 </div>
                 
-                <form method="POST" class="flex items-center space-x-2 bg-white/5 p-2 rounded-xl border border-white/10">
+                <form method="POST" class="flex items-center space-x-2 bg-white/5 p-2 rounded-xl border border-white/10 w-full md:w-auto">
                     <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                     <span class="text-xs font-bold text-gray-500 uppercase ml-2">Status:</span>
-                    <select name="status" class="bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-sky-500 text-white outline-none">
+                    <select name="status" class="bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-sky-500 text-white outline-none flex-1 md:flex-none">
                         <?php foreach ($availableStatuses as $st): ?>
                             <option value="<?= htmlspecialchars($st['status']) ?>" <?= ($submission['status'] ?? 'pending') === $st['status'] ? 'selected' : '' ?> class="bg-slate-800">
                                 <?= ucfirst(htmlspecialchars($st['status'])) ?>
@@ -91,9 +93,9 @@ function isSafeUrl($url) {
                 <div class="bg-red-500/20 text-red-400 p-4 rounded-lg mb-6 border border-red-500/30"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
             
-            <div class="glass p-8 rounded-3xl shadow-2xl">
+            <div class="glass p-8 rounded-3xl shadow-2xl preview-container">
                 <div class="space-y-8">
-                    <div class="flex justify-between items-center border-b border-white/10 pb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/10 pb-6 gap-4">
                         <div class="flex flex-col">
                             <h3 class="text-xs font-bold text-sky-500 uppercase tracking-wider">Submitted By</h3>
                             <div class="flex items-center space-x-2 mt-1">
@@ -105,7 +107,7 @@ function isSafeUrl($url) {
                                 </span>
                             </div>
                         </div>
-                        <div class="text-right">
+                        <div class="text-left md:text-right">
                             <h3 class="text-xs font-bold text-sky-500 uppercase tracking-wider">Current Status</h3>
                             <span class="inline-block mt-1 px-3 py-1 text-xs font-bold rounded-full border <?= Statuses::getTailwindClasses($submission['status'] ?? 'pending', $colorMap) ?>">
                                 <?= strtoupper(htmlspecialchars($submission['status'] ?? 'pending')) ?>
@@ -151,13 +153,13 @@ function isSafeUrl($url) {
                         ?>
                             <div class="mt-2">
                                 <?php if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])): ?>
-                                    <img src="<?= $viewUrl ?>" class="max-w-xs rounded-lg border border-white/20 shadow-lg" loading="lazy">
+                                    <img src="<?= $viewUrl ?>" class="max-w-full md:max-w-xs rounded-lg border border-white/20 shadow-lg" loading="lazy">
                                     <div class="mt-2 flex items-center space-x-2">
                                         <span class="text-xs text-gray-400 truncate max-w-[200px]"><?= htmlspecialchars($originalName) ?></span>
                                         <a href="<?= $fileUrl ?>" class="text-xs text-sky-400 hover:underline">Download</a>
                                     </div>
                                 <?php elseif (in_array($ext, ['mp4', 'webm'])): ?>
-                                    <video controls class="max-w-md rounded-lg border border-white/20">
+                                    <video controls class="w-full md:max-w-md rounded-lg border border-white/20">
                                         <source src="<?= $viewUrl ?>">
                                     </video>&nbsp;
                                     <div class="mt-2 flex items-center space-x-2">
@@ -205,7 +207,7 @@ function isSafeUrl($url) {
                             <div class="relative group">
                                 <pre class="bg-black/20 p-4 rounded-xl text-sm whitespace-pre-wrap font-sans"><?php 
                                     // Fix for literal \n strings showing up
-                                    $displayVal = str_replace('\n', "\n", $val);
+                                    $displayVal = str_replace('\\n', "\n", $val);
                                     echo htmlspecialchars($displayVal); 
                                 ?></pre>
                                 <button class="copy-pre-btn absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-sky-600 text-xs px-2 py-1 rounded">Copy</button>

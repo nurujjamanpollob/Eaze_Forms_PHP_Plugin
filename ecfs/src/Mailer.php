@@ -89,6 +89,37 @@ class Mailer {
         }
     }
 
+    /**
+     * Parses a template by replacing placeholders with dynamic data.
+     * Placeholders should be in the format {{field_name}}.
+     */
+    public static function parseTemplate(string $template, array $data): string {
+        $parsed = $template;
+        foreach ($data as $key => $value) {
+            $placeholder = '{{' . $key . '}}';
+            // Ensure value is a string and handle safely
+            $valStr = is_array($value) ? json_encode($value) : (string)$value;
+            $parsed = str_replace($placeholder, htmlspecialchars($valStr), $parsed);
+        }
+        
+        // Special case for form_data summary
+        if (strpos($parsed, '{{form_data}}') !== false) {
+            $summary = "<ul>";
+            foreach ($data as $key => $value) {
+                // Skip system/internal keys in the summary if needed, or include them
+                if (in_array($key, ['csrf_token', 'submission_id', 'submitted_by', 'footer_text'])) continue;
+                $valStr = is_array($value) ? json_encode($value) : (string)$value;
+                $summary .= "<li><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($valStr) . "</li>";
+            }
+            $summary .= "</ul>";
+            $parsed = str_replace('{{form_data}}', $summary, $parsed);
+        }
+
+        // Replace any remaining placeholders with empty string or keep them? 
+        // Usually, it's better to remove them to avoid showing raw tags.
+        return preg_replace('/\{\{.*?\}\}/', '', $parsed);
+    }
+
     private static function sendCommand($socket, $command, $expectedCode) {
         if (@fwrite($socket, $command . "\r\n") === false) {
             throw new \Exception("Failed to write command to socket");

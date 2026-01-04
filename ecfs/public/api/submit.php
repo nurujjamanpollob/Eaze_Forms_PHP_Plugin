@@ -96,6 +96,13 @@ try {
     if ($result['success']) {
         $submissionId = $result['submission_id'];
         
+        // Prepare template data
+        $templateData = array_merge($data, [
+            'submission_id' => $submissionId,
+            'submitted_by' => $submittedBy,
+            'footer_text' => Settings::get('footer_text', '')
+        ]);
+
         // --- Email Notifications ---
         
         // 1. Admin Notification
@@ -104,34 +111,8 @@ try {
         
         if ($enableAdminNotification && !empty($adminEmail)) {
             $subject = "New Form Submission (#$submissionId)";
-            $body = "<h2>New Submission Received</h2>";
-            $body .= "<p><strong>ID:</strong> $submissionId</p>";
-            $body .= "<p><strong>Submitted By:</strong> $submittedBy</p>";
-            $body .= "<h3>Form Data:</h3><ul>";
-            foreach ($data as $key => $value) {
-                if ($key === 'csrf_token') continue;
-                $body .= "<li><strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "</li>";
-            }
-            $body .= "</ul>";
-
-            if (!empty($uploadedFiles)) {
-                $body .= "<h3>Uploaded Files:</h3><ul>";
-                foreach ($uploadedFiles as $fieldName => $fileData) {
-                    // Check if it's a multiple upload (array of files) or single
-                    if (isset($fileData['original_name'])) {
-                        // Single file
-                        $body .= "<li><strong>" . htmlspecialchars($fieldName) . ":</strong> " . htmlspecialchars($fileData['original_name']) . "</li>";
-                    } else if (is_array($fileData)) {
-                        // Multiple files
-                        foreach ($fileData as $file) {
-                            if (isset($file['original_name'])) {
-                                $body .= "<li><strong>" . htmlspecialchars($fieldName) . ":</strong> " . htmlspecialchars($file['original_name']) . "</li>";
-                            }
-                        }
-                    }
-                }
-                $body .= "</ul>";
-            }
+            $adminTemplate = Settings::get('admin_email_template', '<h2>New Submission Received</h2><p><strong>ID:</strong> {{submission_id}}</p><p><strong>Submitted By:</strong> {{submitted_by}}</p><h3>Form Data:</h3>{{form_data}}');
+            $body = Mailer::parseTemplate($adminTemplate, $templateData);
             Mailer::send($adminEmail, $subject, $body);
         }
 
@@ -147,10 +128,8 @@ try {
 
         if ($enableConfirmation && !empty($userEmail)) {
             $subject = "Submission Confirmation - " . Settings::get('smtp_from_name', 'EazeWebIT');
-            $body = "<h2>Thank you for your submission!</h2>";
-            $body .= "<p>We have received your form submission (Reference ID: #$submissionId).</p>";
-            $body .= "<p>This is an automated confirmation. We will review your submission shortly.</p>";
-            $body .= "<br><hr><p><small>" . Settings::get('footer_text', '') . "</small></p>";
+            $userTemplate = Settings::get('user_email_template', '<h2>Thank you for your submission!</h2><p>We have received your form submission (Reference ID: #{{submission_id}}).</p><p>This is an automated confirmation. We will review your submission shortly.</p><br><hr><p><small>{{footer_text}}</small></p>');
+            $body = Mailer::parseTemplate($userTemplate, $templateData);
             Mailer::send($userEmail, $subject, $body);
         }
 

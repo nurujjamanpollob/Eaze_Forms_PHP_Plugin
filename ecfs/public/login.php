@@ -12,13 +12,14 @@ $nonce = Security::getNonce();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background: #0f172a; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
-    <div class="glass p-8 rounded-2xl shadow-2xl w-full max-w-md">
+    <div class="glass p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4">
         <div class="text-center mb-8">
             <img src="/ecfs/public/assets/logo.png" alt="Logo" class="mx-auto h-16 mb-4">
             <h1 class="text-2xl font-bold text-sky-400">Admin Login</h1>

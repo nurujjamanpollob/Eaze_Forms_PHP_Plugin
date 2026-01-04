@@ -4,6 +4,7 @@ use EazeWebIT\Submissions;
 use EazeWebIT\Auth;
 use EazeWebIT\Statuses;
 use EazeWebIT\Security;
+use EazeWebIT\Settings;
 
 if (!Auth::check() || !Auth::isAdmin()) {
     header('Location: login.php');
@@ -13,12 +14,22 @@ if (!Auth::check() || !Auth::isAdmin()) {
 Security::initSession();
 $nonce = Security::getNonce();
 
+// Pagination setup
+$limit = (int)Settings::get('dashboard_pagination_limit', 6);
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($page - 1) * $limit;
+
 $filters = [
     'status' => $_GET['status'] ?? 'All Statuses',
-    'search' => $_GET['search'] ?? ''
+    'search' => $_GET['search'] ?? '',
+    'limit' => $limit,
+    'offset' => $offset
 ];
 
 $submissions = Submissions::getAll($filters);
+$totalSubmissions = Submissions::countAll($filters);
+$totalPages = ceil($totalSubmissions / $limit);
+
 $isAdmin = Auth::isAdmin();
 $availableStatuses = Statuses::all();
 $colorMap = Statuses::getColorMap();
@@ -30,6 +41,7 @@ $colorMap = Statuses::getColorMap();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background-color: #0f172a; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -68,7 +80,7 @@ $colorMap = Statuses::getColorMap();
             </div>
         </div>
 
-        <div id="submissions-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="submissions-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <?php foreach ($submissions as $sub): 
                 $currentStatus = $sub['status'] ?? 'pending';
                 $statusClasses = Statuses::getTailwindClasses($currentStatus, $colorMap);
@@ -110,6 +122,28 @@ $colorMap = Statuses::getColorMap();
             </div>
             <?php endif; ?>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($totalPages > 1): ?>
+        <div class="flex justify-center items-center space-x-2 mb-5-rem-mobile">
+            <?php if ($page > 1): ?>
+                <a href="?page=<?= $page - 1 ?>&status=<?= urlencode($filters['status']) ?>&search=<?= urlencode($filters['search']) ?>" class="px-4 py-2 glass rounded-lg hover:bg-white/10 transition">Previous</a>
+            <?php endif; ?>
+            
+            <div class="flex space-x-1">
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="?page=<?= $i ?>&status=<?= urlencode($filters['status']) ?>&search=<?= urlencode($filters['search']) ?>" 
+                       class="w-10 h-10 flex items-center justify-center rounded-lg transition <?= $i === $page ? 'bg-sky-600 text-white' : 'glass hover:bg-white/10' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
+
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?= $page + 1 ?>&status=<?= urlencode($filters['status']) ?>&search=<?= urlencode($filters['search']) ?>" class="px-4 py-2 glass rounded-lg hover:bg-white/10 transition">Next</a>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
     </main>
 
     <?php include 'includes/copyright.php'; ?>
@@ -124,11 +158,12 @@ $colorMap = Statuses::getColorMap();
                 });
             }
 
-            // Auto-refresh every 30 seconds if no search is active
+            // Auto-refresh every 30 seconds if no search is active and on page 1
             const hasSearch = <?= !empty($filters['search']) ? 'true' : 'false' ?>;
             const hasStatusFilter = <?= $filters['status'] !== 'All Statuses' ? 'true' : 'false' ?>;
+            const isPageOne = <?= $page === 1 ? 'true' : 'false' ?>;
             
-            if (!hasSearch && !hasStatusFilter) {
+            if (!hasSearch && !hasStatusFilter && isPageOne) {
                 setInterval(() => {
                     window.location.reload();
                 }, 30000);

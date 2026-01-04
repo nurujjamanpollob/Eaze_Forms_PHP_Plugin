@@ -63,8 +63,10 @@ $colors = ['sky', 'yellow', 'green', 'red', 'blue', 'purple', 'gray', 'orange', 
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Status Management - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background: #0f172a; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -114,7 +116,7 @@ $colors = ['sky', 'yellow', 'green', 'red', 'blue', 'purple', 'gray', 'orange', 
                 </form>
             </div>
 
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-2 mb-5-rem-mobile">
                 <div class="glass rounded-2xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead class="bg-white/5 border-b border-white/10">
@@ -133,7 +135,7 @@ $colors = ['sky', 'yellow', 'green', 'red', 'blue', 'purple', 'gray', 'orange', 
                                     </span>
                                 </td>
                                 <td class="p-4 text-sm text-gray-400">
-                                    <?= htmlspecialchars(str_replace('\\n', "\n", $s['description'])) ?>
+                                    <?= htmlspecialchars(str_replace('\\\\n', "\n", $s['description'])) ?>
                                 </td>
                                 <td class="p-4 text-right">
                                     <form method="POST" class="delete-status-form inline">

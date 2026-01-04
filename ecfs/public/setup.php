@@ -34,9 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Initial Setup - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
-    <div class="bg-gray-800 p-8 rounded-xl shadow-xl w-full max-w-md">
+    <div class="bg-gray-800 p-8 rounded-xl shadow-xl w-full max-w-md mx-4">
         <div class="text-center mb-6">
             <h1 class="text-2xl font-bold text-sky-400">System Setup</h1>
             <p class="text-gray-400 text-sm">Initialize your database and create an admin account.</p>

@@ -5,11 +5,32 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $isAdmin = \EazeWebIT\Auth::isAdmin();
 $logoUrl = Settings::get('admin_logo_url', '/ecfs/public/assets/logo.png');
 ?>
-<aside class="w-64 bg-slate-900 h-screen sticky top-0 flex flex-col border-r border-white/10">
+<!-- Mobile Header -->
+<div class="mobile-header lg:hidden">
+    <div class="flex items-center space-x-3">
+        <img src="<?= htmlspecialchars($logoUrl) ?>" alt="Logo" class="h-8">
+        <span class="text-lg font-bold text-sky-400">Eaze Web IT</span>
+    </div>
+    <button id="mobile-sidebar-toggle" class="p-2 text-gray-400 hover:text-white focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+    </button>
+</div>
+
+<!-- Sidebar Overlay -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<aside id="main-sidebar" class="w-64 bg-slate-900 h-screen sticky top-0 flex flex-col border-r border-white/10">
     <div class="p-6">
-        <div class="flex items-center space-x-3 mb-10">
-            <img src="<?= htmlspecialchars($logoUrl) ?>" alt="Logo" class="h-8">
-            <a href="https://eazewebit.com" target="_blank" class="text-lg font-bold text-sky-400 hover:text-sky-300 transition">Eaze Web IT</a>
+        <div class="flex items-center justify-between mb-10">
+            <div class="flex items-center space-x-3">
+                <img src="<?= htmlspecialchars($logoUrl) ?>" alt="Logo" class="h-8">
+                <a href="https://eazewebit.com" target="_blank" class="text-lg font-bold text-sky-400 hover:text-sky-300 transition">Eaze Web IT</a>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         </div>
 
         <nav class="space-y-1">
@@ -71,3 +92,34 @@ $logoUrl = Settings::get('admin_logo_url', '/ecfs/public/assets/logo.png');
         </form>
     </div>
 </aside>
+
+<script nonce="<?= $nonce ?? '' ?>">
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('main-sidebar');
+    const toggle = document.getElementById('mobile-sidebar-toggle');
+    const overlay = document.getElementById('sidebar-overlay');
+    const closeBtn = document.getElementById('close-sidebar');
+
+    if (toggle && sidebar && overlay) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        const closeSidebar = function() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        overlay.addEventListener('click', closeSidebar);
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        
+        // Close sidebar on link click (mobile)
+        sidebar.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', closeSidebar);
+        });
+    }
+});
+</script>

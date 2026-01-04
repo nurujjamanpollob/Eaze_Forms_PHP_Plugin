@@ -27,8 +27,10 @@ if ($type === 'security') {
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Logs - EazeWebIT</title>
     <script src="https://cdn.tailwindcss.com" nonce="<?= $nonce ?>"></script>
+    <link rel="stylesheet" href="assets/responsive.css">
     <style>
         body { background: #0f172a; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -49,7 +51,8 @@ if ($type === 'security') {
             </div>
         </header>
 
-        <div class="glass rounded-2xl overflow-hidden">
+        <div class="lg:col-span-2 mb-5-rem-mobile">
+        <div class="glass rounded-2xl overflow-hidden ">
             <div class="p-4 bg-white/5 border-b border-white/10 flex justify-between items-center">
                 <h2 class="font-bold text-white"><?= htmlspecialchars($title) ?></h2>
                 <span class="text-xs text-gray-500">Showing last 100 entries</span>
