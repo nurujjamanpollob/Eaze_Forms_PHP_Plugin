@@ -1,0 +1,181 @@
+/* Responsive Adjustments for EazeWebIT Admin Panel */
+
+/* Mobile Header */
+.mobile-header {
+    display: none;
+    background: #0f172a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Sidebar Responsive Styles */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column !important;
+    }
+
+    aside {
+        position: fixed !important;
+        left: -100%;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+        transition: left 0.3s ease;
+        width: 280px !important;
+        height: 100vh !important;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    aside.active {
+        left: 0;
+    }
+
+    .mobile-header {
+        display: flex;
+    }
+
+    main {
+        padding: 1.5rem !important;
+        width: 100% !important;
+    }
+
+    /* Sidebar Overlay */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 90;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
+/* Manage Submissions & Table Responsiveness */
+@media (max-width: 768px) {
+    .glass {
+        overflow-x: hidden;
+        border: none;
+        background: transparent;
+    }
+    
+    .responsive-table, 
+    .responsive-table thead, 
+    .responsive-table tbody, 
+    .responsive-table th, 
+    .responsive-table td, 
+    .responsive-table tr {
+        display: block;
+    }
+
+    .responsive-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .responsive-table tr {
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .responsive-table td {
+        border: none;
+        position: relative;
+        padding-left: 45% !important;
+        text-align: right !important;
+        min-height: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .responsive-table td:last-child {
+        border-bottom: none;
+    }
+
+    .responsive-table td:before {
+        position: absolute;
+        left: 1rem;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 700;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b; /* text-gray-500 */
+        content: attr(data-label);
+    }
+
+    .bulk-actions-container {
+        justify-content: center;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .bulk-action-btn {
+        flex: 1 1 calc(50% - 0.5rem);
+        text-align: center;
+        justify-content: center;
+        padding: 0.5rem 0.25rem !important;
+        font-size: 9px !important;
+    }
+
+    .preview-container {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Form and Grid Adjustments */
+@media (max-width: 640px) {
+    .grid-cols-2, .grid-cols-3, .grid-cols-4 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .p-8 {
+        padding: 1rem !important;
+    }
+
+    .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+        margin-left: 0 !important;
+        margin-top: 0.5rem !important;
+    }
+    
+    /* Ensure flex-row inside main content stacks on mobile */
+    .main-content .flex-row:not(.flex-row-no-stack) {
+        flex-direction: column !important;
+    }
+
+    .main-content .flex-row.space-x-4 {
+        space-x: 0 !important;
+    }
+
+    h1 { font-size: 1.75rem !important; }
+    h2 { font-size: 1.5rem !important; }
+}
+
+
+@media (max-width: 480px) {
+    .mb-5-rem-mobile {
+        margin-bottom: 5rem !important;
+    }
+    
+    .bulk-action-btn {
+        flex: 1 1 100%;
+    }
+}
